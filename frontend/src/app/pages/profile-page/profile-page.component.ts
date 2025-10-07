@@ -4,6 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { BookingService } from '../../components/ResourceMenu/Services/booking.service';
+import {
+  PersonalitySettings,
+  ReceptionistPersonalityComponent,
+} from '../../components/receptionist-personality/receptionist-personality.component';
+import {
+  AdminTab,
+  AdminTabId,
+  NavTabsComponent,
+} from '../../components/nav-tabs/nav-tabs.component';
+import { ReceptionistProfileService } from '../../services/receptionist-profile.service';
 
 export interface BookingDto {
   id: number;
@@ -19,16 +29,34 @@ export interface BookingDto {
 
 @Component({
   selector: 'app-profile-page',
-  imports: [CommonModule, FormsModule],
+  //lägg till NavTabsComponent i imports
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReceptionistPersonalityComponent,
+    NavTabsComponent,
+  ],
   templateUrl: './profile-page.component.html',
-  styleUrl: './profile-page.component.css'
+  styleUrl: './profile-page.component.css',
 })
 export class ProfilePageComponent implements OnInit {
+  //Tabs-konfiguration
+  tabs: AdminTab[] = [
+    { id: 'bookings' as AdminTabId, label: 'Alla bokningar' },
+    { id: 'sensors' as AdminTabId, label: 'Alla sensorer' },
+    { id: 'receptionist' as AdminTabId, label: 'Receptionisten' },
+  ];
+  activeId: AdminTabId = 'bookings' as AdminTabId;
+
+  // enkel handler från NavTabs
+  onChangeTab(id: AdminTabId) {
+    this.activeId = id;
+  }
   bookings: BookingDto[] = [];
   selectedBooking: BookingDto | null = null;
   isLoading = false;
   errorMessage = '';
-  
+
   // Joel's ändringar för rätt userinfo - Editing funktionalitet
   isEditing = false;
   editForm: any = {
@@ -36,12 +64,12 @@ export class ProfilePageComponent implements OnInit {
     status: '',
     // Behåll ursprungliga tider för referens
     originalStartTime: '',
-    originalEndTime: ''
+    originalEndTime: '',
   };
-  
+
   // Joel's ändringar - Inaktivera tidigare datum på kalendern
   minDate = '';
-  
+
   // Cache user data to avoid repeated AuthService calls
   userName = '';
   userEmail = '';
@@ -49,10 +77,25 @@ export class ProfilePageComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private http: HttpClient,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private receptionistProfileService: ReceptionistProfileService
   ) {}
 
+  profile: PersonalitySettings | null = null;
+
   ngOnInit() {
+    const userId = this.authService.getUserId();
+    this.receptionistProfileService.getProfile(userId).subscribe({
+      next: (res: any) => {
+        this.profile = {
+          assistantName: res.assistantName ?? '',
+          tone: res.tone ?? 'neutral',
+          style: res.style ?? 'balanced',
+          emoji: Number.isFinite(res.emoji) ? res.emoji : 0,
+        };
+      },
+      error: (err) => console.error('Kunde inte hämta profil', err),
+    });
     // Load user data once
     this.loadUserData();
     // Load bookings
@@ -63,12 +106,15 @@ export class ProfilePageComponent implements OnInit {
     // Cache user data to avoid repeated AuthService calls during change detection
     this.userName = this.authService.getUserName();
     const account = this.authService.getActiveAccount();
-    this.userEmail = account?.username || (account?.idTokenClaims?.['email'] as string) || 'Ingen e-post';
+    this.userEmail =
+      account?.username ||
+      (account?.idTokenClaims?.['email'] as string) ||
+      'Ingen e-post';
   }
 
   private async loadUserBookings() {
     console.log('📋 Loading user bookings...');
-    
+
     if (!this.authService.isLoggedIn()) {
       this.errorMessage = 'Du måste vara inloggad för att se dina bokningar';
       console.log('❌ User not logged in');
@@ -87,11 +133,13 @@ export class ProfilePageComponent implements OnInit {
     this.errorMessage = '';
 
     try {
-      const apiUrl = (window as any).__env?.NG_APP_API_URL || 'http://localhost:5184';
+      const apiUrl =
+        (window as any).__env?.NG_APP_API_URL || 'http://localhost:5184';
       const fullUrl = `${apiUrl}/api/booking/user/${userId}`;
       console.log('🌐 Making API call to:', fullUrl);
-      
-      this.bookings = await this.http.get<BookingDto[]>(fullUrl).toPromise() || [];
+
+      this.bookings =
+        (await this.http.get<BookingDto[]>(fullUrl).toPromise()) || [];
       console.log('✅ Bookings loaded:', this.bookings);
     } catch (error) {
       console.error('❌ Fel vid hämtning av bokningar:', error);
@@ -102,32 +150,33 @@ export class ProfilePageComponent implements OnInit {
   }
 
   selectBooking(booking: BookingDto) {
-    this.selectedBooking = this.selectedBooking?.id === booking.id ? null : booking;
+    this.selectedBooking =
+      this.selectedBooking?.id === booking.id ? null : booking;
     this.isEditing = false; // Reset editing mode when selecting different booking
   }
 
   // Joel's ändringar för rätt userinfo - Redigeringsfunktionalitet
   startEdit() {
     if (!this.selectedBooking) return;
-    
+
     console.log('🔍 Starting edit for booking:', this.selectedBooking);
-    
+
     this.isEditing = true;
     // Populate edit form with current booking data
     const startDate = new Date(this.selectedBooking.startTime);
-    
+
     // Joel's ändringar - Sätt minsta datum till idag för att förhindra tidigare datum
     const today = new Date();
     this.minDate = this.formatDateOnly(today);
-    
+
     // Extrahera endast datum för redigering, behåll tider som de är
     this.editForm = {
       bookingDate: this.formatDateOnly(startDate),
       status: this.selectedBooking.status,
       originalStartTime: this.selectedBooking.startTime,
-      originalEndTime: this.selectedBooking.endTime
+      originalEndTime: this.selectedBooking.endTime,
     };
-    
+
     console.log('🔍 Edit form populated:', this.editForm);
     console.log('🔍 Min date set to:', this.minDate);
   }
@@ -138,7 +187,7 @@ export class ProfilePageComponent implements OnInit {
       bookingDate: '',
       status: '',
       originalStartTime: '',
-      originalEndTime: ''
+      originalEndTime: '',
     };
   }
 
@@ -150,7 +199,7 @@ export class ProfilePageComponent implements OnInit {
 
     const userId = this.authService.getUserId();
     const userName = this.authService.getUserName();
-    
+
     if (!userId) {
       this.errorMessage = 'Kunde inte hämta användar-ID';
       return;
@@ -175,46 +224,68 @@ export class ProfilePageComponent implements OnInit {
       // Joel's ändringar - Debug information
       console.log('🔍 EditForm data:', this.editForm);
       console.log('🔍 Selected booking:', this.selectedBooking);
-      
+
       // Joel's ändringar - Kombinera nytt datum med bevarade tider
       const originalStartTime = new Date(this.editForm.originalStartTime);
       const originalEndTime = new Date(this.editForm.originalEndTime);
-      
+
       console.log('🔍 Original times:', { originalStartTime, originalEndTime });
       console.log('🔍 Booking date string:', this.editForm.bookingDate);
-      
+
       // Joel's fix - Skapa datum från bookingDate-strängen och sätt rätt tid
       const dateParts = this.editForm.bookingDate.split('-');
       const year = parseInt(dateParts[0]);
       const month = parseInt(dateParts[1]) - 1; // JavaScript månader är 0-indexerade
       const day = parseInt(dateParts[2]);
-      
+
       // Skapa nya starttid med rätt datum
-      const newStartTime = new Date(year, month, day, 
-        originalStartTime.getHours(), 
-        originalStartTime.getMinutes(), 
+      const newStartTime = new Date(
+        year,
+        month,
+        day,
+        originalStartTime.getHours(),
+        originalStartTime.getMinutes(),
         originalStartTime.getSeconds(),
-        originalStartTime.getMilliseconds());
-      
+        originalStartTime.getMilliseconds()
+      );
+
       // Joel's fix - Beräkna dagsskillnad korrekt
       // Kontrollera om sluttiden är nästa dag genom att jämföra datum-delen
-      const startDateOnly = new Date(originalStartTime.getFullYear(), originalStartTime.getMonth(), originalStartTime.getDate());
-      const endDateOnly = new Date(originalEndTime.getFullYear(), originalEndTime.getMonth(), originalEndTime.getDate());
-      const originalDayDiff = Math.round((endDateOnly.getTime() - startDateOnly.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const startDateOnly = new Date(
+        originalStartTime.getFullYear(),
+        originalStartTime.getMonth(),
+        originalStartTime.getDate()
+      );
+      const endDateOnly = new Date(
+        originalEndTime.getFullYear(),
+        originalEndTime.getMonth(),
+        originalEndTime.getDate()
+      );
+      const originalDayDiff = Math.round(
+        (endDateOnly.getTime() - startDateOnly.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
       // Skapa nya sluttid - lägg till dagsskillnaden om den finns
-      const newEndTime = new Date(year, month, day + originalDayDiff, 
-        originalEndTime.getHours(), 
-        originalEndTime.getMinutes(), 
+      const newEndTime = new Date(
+        year,
+        month,
+        day + originalDayDiff,
+        originalEndTime.getHours(),
+        originalEndTime.getMinutes(),
         originalEndTime.getSeconds(),
-        originalEndTime.getMilliseconds());
-      
+        originalEndTime.getMilliseconds()
+      );
+
       console.log('🔍 Original day difference:', originalDayDiff);
       console.log('🔍 Start date only:', startDateOnly);
       console.log('🔍 End date only:', endDateOnly);
 
       console.log('🔍 Final times:', { newStartTime, newEndTime });
-      console.log('🔍 Time difference (ms):', newEndTime.getTime() - newStartTime.getTime());
+      console.log(
+        '🔍 Time difference (ms):',
+        newEndTime.getTime() - newStartTime.getTime()
+      );
 
       const updateDto = {
         userId: userId,
@@ -222,18 +293,20 @@ export class ProfilePageComponent implements OnInit {
         resourceId: this.selectedBooking.resourceId,
         startTime: newStartTime.toISOString(),
         endTime: newEndTime.toISOString(),
-        status: this.editForm.status
+        status: this.editForm.status,
       };
 
       console.log('🔍 Update DTO:', updateDto);
 
-      await this.bookingService.update(this.selectedBooking.id, updateDto).toPromise();
-      
+      await this.bookingService
+        .update(this.selectedBooking.id, updateDto)
+        .toPromise();
+
       // Refresh bookings list
       await this.loadUserBookings();
       this.isEditing = false;
       this.errorMessage = '';
-      
+
       console.log('✅ Booking updated successfully');
     } catch (error) {
       console.error('❌ Fel vid uppdatering av bokning:', error);
@@ -254,20 +327,26 @@ export class ProfilePageComponent implements OnInit {
     }
 
     // Bekräftelse
-    if (!confirm(`Är du säker på att du vill radera bokningen för ${this.selectedBooking.resourceName}?`)) {
+    if (
+      !confirm(
+        `Är du säker på att du vill radera bokningen för ${this.selectedBooking.resourceName}?`
+      )
+    ) {
       return;
     }
 
     try {
       // Use booking service with userId parameter for security
-      await this.bookingService.delete(this.selectedBooking.id, userId).toPromise();
-      
+      await this.bookingService
+        .delete(this.selectedBooking.id, userId)
+        .toPromise();
+
       // Refresh bookings list
       await this.loadUserBookings();
       this.selectedBooking = null;
       this.isEditing = false;
       this.errorMessage = '';
-      
+
       console.log('✅ Booking deleted successfully');
     } catch (error) {
       console.error('❌ Fel vid radering av bokning:', error);
@@ -280,7 +359,7 @@ export class ProfilePageComponent implements OnInit {
     if (this.editForm.startTime && this.editForm.endTime) {
       const startTime = new Date(this.editForm.startTime);
       const endTime = new Date(this.editForm.endTime);
-      
+
       // Om sluttiden är före eller samma som starttiden, sätt sluttiden till en timme efter starttiden
       if (endTime <= startTime) {
         const newEndTime = new Date(startTime.getTime() + 60 * 60 * 1000); // Lägg till 1 timme
@@ -296,7 +375,7 @@ export class ProfilePageComponent implements OnInit {
     const day = date.getDate().toString().padStart(2, '0');
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    
+
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
@@ -305,7 +384,15 @@ export class ProfilePageComponent implements OnInit {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
+  }
+
+  onSavePersonality(settings: PersonalitySettings) {
+    const userId = this.authService.getUserId();
+    this.receptionistProfileService.saveProfile(userId, settings).subscribe({
+      next: (res) => console.log('Profil sparad', res),
+      error: (err) => console.error('Kunde inte spara profil', err),
+    });
   }
 }

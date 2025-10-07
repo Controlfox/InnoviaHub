@@ -1,0 +1,132 @@
+<!-- src/app/components/receptionist-personality/receptionist-personality.component.html -->
+<section class="rounded-2xl bg-white border border-border shadow-sm p-4 md:p-6">
+  <!-- Header-chippar / titel (valfritt) -->
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <div class="text-lg font-semibold text-heading">Receptionisten</div>
+    <span class="hidden md:inline-block text-xs text-heading/60"
+      >Personliga inställningar</span
+    >
+  </div>
+
+  <!-- Grid: två kolumner med divider -->
+  <div class="grid grid-cols-12 gap-6">
+    <!-- Vänster kolumn -->
+    <div class="col-span-12 md:col-span-6 space-y-5">
+      <!-- Namn -->
+      <div>
+        <label class="block text-sm font-medium text-heading mb-1"
+          >Vad ska din receptionist heta?</label
+        >
+        <input
+          type="text"
+          placeholder="Namn"
+          [formControl]="form.controls.assistantName"
+          (input)="onSoftChange()"
+          class="w-full rounded-xl border border-primary bg-[var(--color-bg,_#fff)] px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+        />
+        <p class="mt-1 text-xs text-heading/60">t.ex. “Anna”.</p>
+        <p
+          *ngIf="
+            form.controls.assistantName.invalid &&
+            form.controls.assistantName.touched
+          "
+          class="mt-1 text-xs text-error"
+        >
+          Ange ett namn (max 40 tecken).
+        </p>
+      </div>
+
+      <!-- Ton -->
+      <div>
+        <label class="block text-sm font-medium text-heading mb-1"
+          >Bemötande</label
+        >
+        <p class="text-xs text-heading/60 mb-2">
+          Hur vill du att din receptionist ska bemöta dig?
+        </p>
+        <div class="relative">
+          <select
+            [formControl]="form.controls.tone"
+            (change)="onSoftChange()"
+            class="w-full appearance-none rounded-xl border border-primary bg-[var(--color-bg,_#fff)] px-3 py-2 pr-9 outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          >
+            <option *ngFor="let t of tones" [value]="t.value">
+              {{ t.label }}
+            </option>
+          </select>
+          <span
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-heading/60"
+            >▾</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="hidden md:block md:col-span-1">
+      <div class="h-full w-px bg-border mx-auto"></div>
+    </div>
+
+    <!-- Höger kolumn -->
+    <div class="col-span-12 md:col-span-5 space-y-5">
+      <!-- Emojis -->
+      <div>
+        <label class="block text-sm font-medium text-heading mb-1"
+          >Emojis</label
+        >
+        <p class="text-xs text-heading/60 mb-2">
+          Hur många emojis vill du att din receptionist ska använda?
+        </p>
+        <div class="relative">
+          <select
+            [formControl]="form.controls.emoji"
+            (change)="onSoftChange()"
+            class="w-full appearance-none rounded-xl border border-primary bg-[var(--color-bg,_#fff)] px-3 py-2 pr-9 outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          >
+            <option *ngFor="let e of emojis" [value]="e.value">
+              {{ e.label }}
+            </option>
+          </select>
+          <span
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-heading/60"
+            >▾</span
+          >
+        </div>
+      </div>
+
+      <!-- Svarsstil -->
+      <div>
+        <label class="block text-sm font-medium text-heading mb-1"
+          >Formulering</label
+        >
+        <p class="text-xs text-heading/60 mb-2">Hur ska svaren formuleras?</p>
+        <div class="relative">
+          <select
+            [formControl]="form.controls.style"
+            (change)="onSoftChange()"
+            class="w-full appearance-none rounded-xl border border-primary bg-[var(--color-bg,_#fff)] px-3 py-2 pr-9 outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          >
+            <option *ngFor="let s of styles" [value]="s.value">
+              {{ s.label }}
+            </option>
+          </select>
+          <span
+            class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-heading/60"
+            >▾</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="mt-6 flex items-center justify-end gap-3">
+    <button
+      type="button"
+      class="rounded-full bg-[var(--color-primary)] text-white px-5 py-2 text-sm shadow hover:opacity-95"
+      (click)="onSubmit()"
+    >
+      Spara
+    </button>
+  </div>
+</section>

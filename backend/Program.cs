@@ -5,6 +5,8 @@ using backend.Models.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
+using System.Net.Http.Headers;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +27,17 @@ builder.Services.AddAuthorization(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+DotNetEnv.Env.Load();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddHttpClient("openai", client => {
+   client.BaseAddress = new Uri("https://api.openai.com/v1/responses");
+   var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+
+   client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+   client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+});
 
 
 // För att använda inMemory-databas, sätt useInMemory till true

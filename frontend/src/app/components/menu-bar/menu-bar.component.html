@@ -1,32 +1,32 @@
 <nav class="menu-bar">
   <ul class="menu-bar-list">
     @if (checkIfAdmin()) {
-      <li
-        [class]="
-          currentRoute() === '/admin'
-            ? 'menu-bar-list__item--active'
-            : 'menu-bar-list__item'
-        "
-        id="admin"
-      >
-        <a routerLink="admin">
-          <div class="menu-bar-list__content">
-            <figure class="menu-bar-list__icon">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M12 3L2 12h3v9h6v-6h2v6h6v-9h3L12 3z" fill="#49454F" />
-              </svg>
-            </figure>
-            <span class="menu-bar-list__label">Admin</span>
-          </div>
-        </a>
-      </li>
-  }
+    <li
+      [class]="
+        currentRoute() === '/admin'
+          ? 'menu-bar-list__item--active'
+          : 'menu-bar-list__item'
+      "
+      id="admin"
+    >
+      <a routerLink="admin">
+        <div class="menu-bar-list__content">
+          <figure class="menu-bar-list__icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 3L2 12h3v9h6v-6h2v6h6v-9h3L12 3z" fill="#49454F" />
+            </svg>
+          </figure>
+          <span class="menu-bar-list__label">Admin</span>
+        </div>
+      </a>
+    </li>
+    }
     <li
       [class]="
         currentRoute() === '/profil'
@@ -112,6 +112,19 @@
             </svg>
           </figure>
           <span class="menu-bar-list__label">Sensorer</span>
+        </div>
+      </a>
+    </li>
+    <li class="menu-bar-list__item md:hidden">
+      <a routerLink="/chat">
+        <div class="menu-bar-list__content">
+          <figure class="menu-bar-list__icon">
+            <!-- valfri ikon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M4 4h16v12H5.17L4 17.17V4z" fill="#49454F" />
+            </svg>
+          </figure>
+          <span class="menu-bar-list__label">Chat</span>
         </div>
       </a>
     </li>

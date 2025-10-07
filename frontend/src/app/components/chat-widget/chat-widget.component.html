@@ -1,0 +1,100 @@
+<!-- Visa FAB endast på desktop -->
+<div class="hidden md:block">
+  <!-- FAB -->
+  <button
+    *ngIf="!isOpen()"
+    (click)="toggle()"
+    aria-label="Öppna AI-receptionist"
+    class="fixed bottom-4 right-4 h-14 rounded-full bg-[var(--color-primary)] text-white shadow-xl hover:opacity-90 transition px-5"
+  >
+    💬 Fråga receptionisten!
+  </button>
+
+  <!-- Panel -->
+  <div
+    *ngIf="isOpen()"
+    class="fixed bottom-4 right-4 w-80 max-h-[70vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border"
+  >
+    <!-- Header -->
+    <div
+      class="flex items-center justify-between px-3 py-2 bg-[var(--color-primary)] text-white"
+    >
+      <div class="font-semibold">AI-receptionist</div>
+      <div class="flex items-center gap-2">
+        <button
+          (click)="clearSession()"
+          class="text-white/90 underline text-sm hover:text-white"
+        >
+          Rensa
+        </button>
+        <button
+          (click)="toggle()"
+          aria-label="Stäng"
+          class="rounded p-1 hover:bg-white/10"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto bg-bg p-3 space-y-2">
+      <div
+        *ngIf="chat.messages.length === 0"
+        class="text-sm text-heading/80 bg-bg-alt border border-border rounded-xl p-3"
+      >
+        Hej! Jag är din AI-receptionist. Vad vill du ha hjälp med?
+      </div>
+
+      <ng-container *ngFor="let m of chat.messages; trackBy: m?.id">
+        <!-- Assistant -->
+        <div *ngIf="m.role === 'assistant'" class="flex items-start">
+          <div
+            class="bg-white shadow-sm border border-border rounded-2xl px-3 py-2 text-sm text-heading max-w-[85%] whitespace-pre-wrap"
+          >
+            {{ m.content }}
+          </div>
+        </div>
+        <!-- User -->
+        <div *ngIf="m.role === 'user'" class="flex items-start justify-end">
+          <div
+            class="bg-success/10 border border-success/40 rounded-2xl px-3 py-2 text-sm text-heading max-w-[85%] whitespace-pre-wrap"
+          >
+            {{ m.content }}
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Error -->
+      <div
+        *ngIf="error()"
+        class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"
+      >
+        {{ error() }}
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="border-t border-border bg-bg-alt p-2">
+      <div class="flex items-end gap-2">
+        <textarea
+          rows="2"
+          [value]="input()"
+          (input)="onInput($event)"
+          (keydown)="onKeydown($event)"
+          [disabled]="sending()"
+          placeholder="Skriv ett meddelande…"
+          class="flex-1 resize-none rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+        ></textarea>
+
+        <button
+          (click)="send()"
+          [disabled]="sending() || !input().trim()"
+          class="rounded-xl bg-[var(--color-primary)] text-white px-3 py-2 text-sm shadow hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Skicka
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

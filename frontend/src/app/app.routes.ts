@@ -11,13 +11,33 @@ import { AuthGuard } from './core/authGuard';
 import { RoleGuard } from './core/roleGuard';
 
 export const routes: Routes = [
-  { path: 'admin', component: AdminPageComponent, canActivate: [RoleGuard], data: { roles: ['Admin'] } },
+  {
+    path: 'admin',
+    component: AdminPageComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['Admin'] },
+  },
   { path: 'logga-in', component: LoginPageComponent },
   { path: 'registrera', component: RegistrationPageComponent },
   { path: 'profil', component: ProfilePageComponent, canActivate: [AuthGuard] },
   { path: 'boka', component: BookingPageComponent, canActivate: [AuthGuard] },
-  { path: 'sensorer', component: SensorPageComponent, canActivate: [AuthGuard] },
-  { path: 'azure-debug', component: AzureDebugComponent, canActivate: [AuthGuard] },
+  {
+    path: 'sensorer',
+    component: SensorPageComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'azure-debug',
+    component: AzureDebugComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'chat',
+    loadComponent: () =>
+      import('./pages/chat-page/chat-page.component').then(
+        (m) => m.ChatPageComponent
+      ),
+  },
   { path: '', redirectTo: 'logga-in', pathMatch: 'full' },
   { path: '**', component: NotFoundPageComponent },
 ];
