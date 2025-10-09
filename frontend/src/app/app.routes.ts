@@ -12,6 +12,13 @@ import { RoleGuard } from './core/roleGuard';
 
 export const routes: Routes = [
   {
+    path: 'auth',
+    loadComponent: () =>
+      import('./components/auth-redirect/auth-redirect.component').then(
+        (m) => m.AuthRedirectComponent
+      ),
+  },
+  {
     path: 'admin',
     component: AdminPageComponent,
     canActivate: [RoleGuard],
@@ -30,13 +37,6 @@ export const routes: Routes = [
     path: 'azure-debug',
     component: AzureDebugComponent,
     canActivate: [AuthGuard],
-  },
-  {
-    path: 'chat',
-    loadComponent: () =>
-      import('./pages/chat-page/chat-page.component').then(
-        (m) => m.ChatPageComponent
-      ),
   },
   { path: '', redirectTo: 'logga-in', pathMatch: 'full' },
   { path: '**', component: NotFoundPageComponent },
