@@ -9,7 +9,8 @@ const DEFAULT_LOGIN_REDIRECT = "http://localhost:4200/profil";
 const DEFAULT_LOGOUT_REDIRECT = "http://localhost:4200/logga-in";
 
 //Läser värden från env
-const apiUrl = "https://innoviahub.hellbergsystems.se:8003";
+const apiUrl = "https://innoviahub.hellbergsystems.se:8003" || DEFAULT_API;
+//const apiUrl = process.env.NG_APP_API_URL || DEFAULT_API;
 const hubUrl = process.env.NG_APP_HUB_URL || DEFAULT_HUB;
 const loginRedirectUrl =
   process.env.NG_APP_LOGIN_REDIRECT_URL || DEFAULT_LOGIN_REDIRECT;
