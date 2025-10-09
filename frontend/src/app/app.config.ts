@@ -52,14 +52,26 @@ export function MSALInstanceFactory(): IPublicClientApplication {
 }
 
 export function initializeMsal(msalService: MsalService): () => Promise<void> {
-  return () => {
-    return msalService.instance.initialize();
+  return async () => {
+    await msalService.instance.initialize();
+
+    // Låt MSAL processa ev. svar direkt vid bootstrap (innan router)
+    const result = await msalService.instance.handleRedirectPromise();
+    if (result?.account) {
+      msalService.instance.setActiveAccount(result.account);
+    } else {
+      // sätt aktivt konto om det redan finns lagrat
+      const acc =
+        msalService.instance.getActiveAccount() ||
+        msalService.instance.getAllAccounts()[0];
+      if (acc) msalService.instance.setActiveAccount(acc);
+    }
   };
 }
 
 export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
-    interactionType: InteractionType.Popup,
+    interactionType: InteractionType.Redirect,
     authRequest: {
       scopes: ['user.read'],
     },
@@ -68,7 +80,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
 
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   return {
-    interactionType: InteractionType.Popup,
+    interactionType: InteractionType.Redirect,
     protectedResourceMap: new Map([
       [
         protectedResources.graphApi.endpoint,

@@ -10,6 +10,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-login-page',
@@ -21,7 +22,11 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private readonly _destroying$ = new Subject<void>();
-  
+  constructor(
+    // ...
+    private msal: MsalService
+  ) {}
+
   isLoading = false;
   showTraditionalLogin = false;
 
@@ -31,11 +36,21 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     password: new FormControl('', [Validators.required]),
   });
 
-  ngOnInit(): void {
-    // Kontrollera om användaren redan är inloggad
+  async ngOnInit(): Promise<void> {
+    // 1) Låt MSAL processa ev. redirect-resultat
+    try {
+      const result = await this.msal.instance.handleRedirectPromise();
+      if (result?.account) {
+        this.msal.instance.setActiveAccount(result.account);
+      }
+    } catch (e) {
+      console.error('MSAL redirect handling failed', e);
+    }
+
+    // 2) Om användaren redan är inloggad → vidare till /profil
     if (this.authService.isLoggedIn()) {
-      console.log('🔄 User already logged in, redirecting to profile');
       this.router.navigate(['/profil']);
+      return;
     }
   }
 
@@ -47,26 +62,11 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   // Azure Entra ID login
   async loginWithMicrosoft(): Promise<void> {
     if (this.isLoading) return;
-    
     this.isLoading = true;
-    console.log('🔐 Starting Microsoft login...');
-    
     try {
-      await this.authService.login();
-      
-      // Vänta lite för att säkerställa att autentiseringen är klar
-      setTimeout(() => {
-        if (this.authService.isLoggedIn()) {
-          console.log('✅ Microsoft login successful, redirecting to profile');
-          this.router.navigate(['/profil']);
-        } else {
-          console.log('❌ Microsoft login failed or was cancelled');
-          this.isLoading = false;
-        }
-      }, 1000);
-      
-    } catch (error) {
-      console.error('❌ Microsoft login error:', error);
+      await this.authService.login(); // startar redirect
+    } catch (e) {
+      console.error('❌ Microsoft login error:', e);
       this.isLoading = false;
     }
   }
@@ -77,7 +77,9 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
     // TODO: Implementera traditionell inloggning med backend
     // För nu, visa att denna funktion inte är implementerad än
-    alert('Traditionell inloggning är inte implementerad än. Använd "Logga in med Microsoft" istället.');
+    alert(
+      'Traditionell inloggning är inte implementerad än. Använd "Logga in med Microsoft" istället.'
+    );
   }
 
   // Växla mellan Microsoft-login och traditionell login

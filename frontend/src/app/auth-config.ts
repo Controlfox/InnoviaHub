@@ -1,18 +1,24 @@
 import { Configuration, PopupRequest } from '@azure/msal-browser';
 
-const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || 
-             window.navigator.userAgent.indexOf('Trident/') > -1;
+const isIE =
+  window.navigator.userAgent.indexOf('MSIE ') > -1 ||
+  window.navigator.userAgent.indexOf('Trident/') > -1;
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: '3b2d7872-61e0-426e-ac3a-3803d77187b3', // Klient-ID
-    authority: 'https://login.microsoftonline.com/57d13b38-9721-41f0-b8e4-bcc0183ad098',
-    redirectUri: window.__env?.NG_APP_LOGIN_REDIRECT_URL || 'http://localhost:4200/profil',
-    postLogoutRedirectUri: window.__env?.NG_APP_LOGOUT_REDIRECT_URL || 'http://localhost:4200/logga-in'
+    clientId: '3b2d7872-61e0-426e-ac3a-3803d77187b3',
+    authority:
+      'https://login.microsoftonline.com/57d13b38-9721-41f0-b8e4-bcc0183ad098',
+    redirectUri:
+      window.__env?.NG_APP_LOGIN_REDIRECT_URL || 'http://localhost:4200/profil',
+    postLogoutRedirectUri:
+      window.__env?.NG_APP_LOGOUT_REDIRECT_URL ||
+      'http://localhost:4200/logga-in',
+    navigateToLoginRequestUrl: false, // <- hindra extra navigation som kan rensa hash
   },
   cache: {
     cacheLocation: 'localStorage',
-    storeAuthStateInCookie: isIE
+    storeAuthStateInCookie: isIE,
   },
   system: {
     loggerOptions: {
@@ -36,14 +42,14 @@ export const msalConfig: Configuration = {
           //   console.debug(message);
           //   return;
         }
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export const loginRequest: PopupRequest = {
   scopes: ['user.read', 'openid', 'profile'],
-  prompt: 'select_account'
+  prompt: 'select_account',
 };
 
 export const protectedResources = {
@@ -54,6 +60,6 @@ export const protectedResources = {
   // },
   graphApi: {
     endpoint: 'https://graph.microsoft.com/v1.0/me',
-    scopes: ['user.read']
-  }
+    scopes: ['user.read'],
+  },
 };

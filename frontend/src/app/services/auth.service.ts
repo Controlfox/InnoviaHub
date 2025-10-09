@@ -53,7 +53,7 @@ export class AuthService {
     }
   }
 
-  async login(): Promise<void> {
+  /*async login(): Promise<void> {
     console.log('🔐 Login method called');
 
     if (!this.msalService) {
@@ -93,6 +93,11 @@ export class AuthService {
         }
       }
     }
+  }*/
+
+  async login(): Promise<void> {
+    await this.initializeMsal();
+    await this.msalService.loginRedirect(loginRequest as RedirectRequest);
   }
 
   logout(): void {
