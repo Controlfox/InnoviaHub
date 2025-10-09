@@ -89,6 +89,7 @@ namespace backend.Controllers
 
             return Ok(answer);
         }
+
         //HELPERS
     private static string MapEmoji(int level) => level switch
     {

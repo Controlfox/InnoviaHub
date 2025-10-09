@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PersonalitySettings } from '../components/receptionist-personality/receptionist-personality.component';
+import { AppConfigService } from '../core/app-config.service';
+import { Observable } from 'rxjs';
 
 export type AiTone =
   | 'neutral'
@@ -22,24 +24,25 @@ export interface AiProfile {
 
 @Injectable({ providedIn: 'root' })
 export class ReceptionistProfileService {
-  private base =
-    (window as any).__env?.NG_APP_API_URL ||
-    'http://localhost:5184/api/aiprofile';
+  private readonly url: string;
 
-  constructor(private http: HttpClient) {}
-
-  getProfile(userId: string) {
-    return this.http.get<AiProfile>(`${this.base}/${userId}`);
+  constructor(private http: HttpClient, private cfg: AppConfigService) {
+    // ✅ RÄTT bas-URL
+    this.url = `${this.cfg.apiUrl}/api/aiprofile`;
   }
 
-  saveProfile(userId: string, settings: PersonalitySettings) {
+  getProfile(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.url}/${userId}`);
+  }
+
+  saveProfile(userId: string, settings: PersonalitySettings): Observable<any> {
     const dto = {
       userId,
-      assistantName: settings.assistantName,
-      tone: settings.tone,
-      style: settings.style,
-      emoji: settings.emoji,
+      assistantName: settings.assistantName ?? null,
+      tone: settings.tone ?? 'neutral',
+      style: settings.style ?? 'concise',
+      emoji: Number.isFinite(settings.emoji) ? settings.emoji : 0,
     };
-    return this.http.put<AiProfile>(`${this.base}/${userId}`, dto);
+    return this.http.put<any>(`${this.url}/${userId}`, dto);
   }
 }

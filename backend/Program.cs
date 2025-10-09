@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using System.Net.Http.Headers;
 using DotNetEnv;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +43,7 @@ builder.Services.AddHttpClient("openai", client => {
 
 
 // För att använda inMemory-databas, sätt useInMemory till true
-var useInMemory = false;
+var useInMemory = true;
 
 if (useInMemory)
 {
@@ -85,6 +87,26 @@ if (app.Environment.IsDevelopment())
 {
    app.MapOpenApi();
 }
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        var detail = app.Environment.IsDevelopment()
+            ? feature?.Error.ToString()
+            : "An unexpected error occurred.";
+        var problem = new ProblemDetails
+        {
+            Status = 500,
+            Title = "Server error",
+            Detail = detail
+        };
+        await context.Response.WriteAsJsonAsync(problem);
+    });
+});
 
 // Joel's ändringar för rätt userinfo - Authentication och Authorization middleware för Azure AD
 app.UseHttpsRedirection();
