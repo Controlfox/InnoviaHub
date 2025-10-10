@@ -27,7 +27,6 @@ export class ReceptionistProfileService {
   private readonly url: string;
 
   constructor(private http: HttpClient, private cfg: AppConfigService) {
-    // ✅ RÄTT bas-URL
     this.url = `${this.cfg.apiUrl}/api/aiprofile`;
   }
 
@@ -36,12 +35,13 @@ export class ReceptionistProfileService {
   }
 
   saveProfile(userId: string, settings: PersonalitySettings): Observable<any> {
+    const emojiNum = Math.max(0, Math.min(3, Number(settings.emoji))); //Tvångskonverterar
     const dto = {
       userId,
       assistantName: settings.assistantName ?? null,
       tone: settings.tone ?? 'neutral',
       style: settings.style ?? 'concise',
-      emoji: Number.isFinite(settings.emoji) ? settings.emoji : 0,
+      emoji: Number.isFinite(emojiNum) ? emojiNum : 0,
     };
     return this.http.put<any>(`${this.url}/${userId}`, dto);
   }

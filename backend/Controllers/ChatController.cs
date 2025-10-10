@@ -20,6 +20,10 @@ namespace backend.Controllers
         //Ta emot fråga och userId
         public record ChatRequest(string question, Guid? userId);
 
+        [HttpGet("ping")]
+public IActionResult Ping() => Ok("chat alive");
+
+
         [HttpPost]
         public async Task<IActionResult> Chat([FromBody] ChatRequest request)
         {
@@ -47,6 +51,8 @@ namespace backend.Controllers
             Pris för Mötesrum: 400kr/dag eller 4000kr/månad
             Pris för AI-server: 600kr/dag, inget månadsabonnemang
             Pris för VR-headset: 500kr/dag eller 5000kr/månad
+            Du kan inte boka åt en användare, bara ge information om resurserna.
+            Du svarar ENDAST på frågor som är relaterade till kontorshotellet InnoviaHub.
             Här är information om resurser och bokningar:
             {facts}
 
@@ -99,52 +105,8 @@ namespace backend.Controllers
         >= 3 => "många emojis"
     };
 
-
-    private static string NormalizeTone(string tone) => tone.ToLowerInvariant() switch
-    {
-        "cheerful"     => "glad och förstående",
-        "friendly"     => "vänlig",
-        "neutral"      => "neutral",
-        "professional" => "professionell",
-        "direct"       => "rakt på sak",
-        "sarcastic"    => "torr/sarkastisk (lekfullt)",
-        _              => "neutral"
-    };
-
-    private static string NormalizeStyle(string style) => style.ToLowerInvariant() switch
-    {
-        "short"     => "kort och koncist",
-        "balanced"  => "lagom detaljer",
-        "detailed"  => "detaljerat",
-        _           => "lagom detaljer"
-    };
-
-    private async Task<string> BuildBookingFacts(DateTime date) {
-        var today = DateTime.UtcNow.Date;
-        var futureBookings = await _dbContext.Bookings
-            .Where(b => b.EndTime >= today)
-            .OrderBy(b => b.StartTime)
-            .ToListAsync();
-
-        if(!futureBookings.Any())
-            return "Det finns inga bokningar.";
-
-        //Grupperar på datum och resurs
-        var grouped = futureBookings
-            .GroupBy(b => b.StartTime.Date)
-            .Select(g => new {
-                Date = g.Key,
-                Resources = g.GroupBy(x => x.Resource)
-                    .Select(rg => $"{rg.Key}: {rg.Count()} bokningar")
-            });
-        var lines = grouped.Select(g => $"{g.Date:yyyy-MM-dd}: {string.Join(", ", g.Resources)}");
-
-        return string.Join("\n", lines);
-    }
-
     private DateTime? TryExtractDate(string question)
 {
-    // t.ex: "28 oktober", "28/10/2025", "2025-10-28"
     var patterns = new[]
     {
         @"(\d{4})-(\d{2})-(\d{2})",       // yyyy-mm-dd
@@ -163,12 +125,12 @@ namespace backend.Controllers
                     return new DateTime(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value));
                 if (pat.Contains("dd/mm/yyyy"))
                     return new DateTime(int.Parse(m.Groups[3].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[1].Value));
-                if (m.Groups.Count >= 3) // "28 oktober"
+                if (m.Groups.Count >= 3)
                 {
                     var day = int.Parse(m.Groups[1].Value);
                     var monthName = m.Groups[2].Value.ToLower();
                     var month = MonthNameToInt(monthName);
-                    var year = DateTime.UtcNow.Year; // default innevarande år
+                    var year = DateTime.UtcNow.Year;
                     return new DateTime(year, month, day);
                 }
             }
