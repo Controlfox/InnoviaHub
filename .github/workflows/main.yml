@@ -2,8 +2,7 @@ name: Deploy and Restart Service
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
@@ -11,18 +10,31 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Publish project
-        run: dotnet publish backend/backend.csproj -c Release -o publish
-
-      - name: Move project to target directory
+      - name: Build & publish
         run: |
-          TARGET_DIR="/var/www/innoviahub/backend-tintin"
-          rsync -a --delete --exclude=".env" ./publish/ "$TARGET_DIR/"
+          dotnet publish backend/backend.csproj -c Release -o ./artifacts/publish
+          ls -la ./artifacts/publish
 
-      - name: Restart innoviahub-tintin.service
+      - name: Sync to server (preserve .env)
         run: |
-          sudo systemctl restart innoviahub-tintin.service
+          TARGET_BASE="/var/www/innoviahub/backend-tintin"
+          TARGET_DIR="$TARGET_BASE/publish"
+
+
+          sudo mkdir -p "$TARGET_DIR"
+
+
+          sudo rsync -a --delete --exclude '.env' ./artifacts/publish/ "$TARGET_DIR/"
+
+          sudo chown -R Hub3:Hub3 "$TARGET_BASE"
+          sudo find "$TARGET_DIR" -type f -exec chmod 640 {} \;
+          sudo find "$TARGET_DIR" -type d -exec chmod 750 {} \;
+
+      - name: Restart service
+        run: |
+          sudo systemctl restart innoviahub-tintin
+          sudo systemctl status innoviahub-tintin --no-pager -n 30
