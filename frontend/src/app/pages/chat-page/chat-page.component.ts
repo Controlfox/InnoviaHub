@@ -22,7 +22,8 @@ export class ChatPageComponent {
     this.error.set(null);
     this.sending.set(true);
     try {
-      await this.chat.ask(q);
+      // STREAMAD!
+      await this.chat.askStream(q);
       this.input.set('');
     } catch (e: any) {
       this.error.set(e?.message ?? 'Ett fel uppstod.');
