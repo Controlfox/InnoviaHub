@@ -11,6 +11,12 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    // Ladda nycklar från .env som processmiljövariabler
+    Env.Load(envPath);
+}
 
 // Joel's ändringar för rätt userinfo - Azure AD Authentication för att få riktiga användar-ID och namn
 // Add Azure AD Authentication
@@ -35,24 +41,24 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient("openai", client => {
    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+   var apiKey =
+        builder.Configuration["OPENAI_API_KEY"] // om du även lägger i AppSettings eller KeyVault
+        ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
-    // Hämta nyckel robust via config & env
-    var apiKey =
-        builder.Configuration["OPENAI_API_KEY"] ??
-        Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-
-    if (string.IsNullOrWhiteSpace(apiKey))
+   if (string.IsNullOrWhiteSpace(apiKey))
     {
-        Console.WriteLine("⚠️ OPENAI_API_KEY saknas i miljön/konfig!");
+        Console.WriteLine("⚠️  OPENAI_API_KEY saknas i miljön (kolla .env och WorkingDirectory).");
     }
 
-   client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-   client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+    client.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+    client.Timeout = TimeSpan.FromSeconds(60);
 });
 
 
 // För att använda inMemory-databas, sätt useInMemory till true
-var useInMemory = false;
+var useInMemory = true;
 
 if (useInMemory)
 {

@@ -14,14 +14,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          
+
       - name: Publish project
         run: dotnet publish backend/backend.csproj -c Release -o publish
 
       - name: Move project to target directory
         run: |
           TARGET_DIR="/var/www/innoviahub/backend-tintin"
-          cp -r ./publish/ "$TARGET_DIR"
+          rsync -a --delete --exclude=".env" ./publish/ "$TARGET_DIR/"
 
       - name: Restart innoviahub-tintin.service
         run: |

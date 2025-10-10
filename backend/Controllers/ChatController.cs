@@ -87,7 +87,7 @@ public IActionResult Ping() => Ok("chat alive");
                 Console.WriteLine($"❌ OpenAI error: {(int)response.StatusCode} {response.StatusCode}");
     Console.WriteLine(raw);
 
-    // Hjälp dig själv/klienten med tydligare fel
+    //HITTA FELET
     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         return StatusCode(502, "OpenAI-nyckel saknas eller ogiltig (401 från OpenAI).");
 
