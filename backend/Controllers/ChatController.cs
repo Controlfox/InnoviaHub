@@ -84,8 +84,17 @@ public IActionResult Ping() => Ok("chat alive");
 
             if(!response.IsSuccessStatusCode)
             {
-                System.Console.WriteLine($"Error from OpenAI: {raw}");
-                return BadRequest("Något gick fel, försök igen senare");
+                Console.WriteLine($"❌ OpenAI error: {(int)response.StatusCode} {response.StatusCode}");
+    Console.WriteLine(raw);
+
+    // Hjälp dig själv/klienten med tydligare fel
+    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        return StatusCode(502, "OpenAI-nyckel saknas eller ogiltig (401 från OpenAI).");
+
+    if ((int)response.StatusCode == 429)
+        return StatusCode(503, "OpenAI rate limit (429). Försök igen strax.");
+
+    return StatusCode(502, "Kunde inte nå språkmodellen just nu.");
             }
 
             var doc = JsonDocument.Parse(raw);

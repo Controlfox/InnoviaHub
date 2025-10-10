@@ -34,8 +34,17 @@ DotNetEnv.Env.Load();
 builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient("openai", client => {
-   client.BaseAddress = new Uri("https://api.openai.com/v1/responses/");
-   var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+   client.BaseAddress = new Uri("https://api.openai.com/v1/");
+
+    // Hämta nyckel robust via config & env
+    var apiKey =
+        builder.Configuration["OPENAI_API_KEY"] ??
+        Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+
+    if (string.IsNullOrWhiteSpace(apiKey))
+    {
+        Console.WriteLine("⚠️ OPENAI_API_KEY saknas i miljön/konfig!");
+    }
 
    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
