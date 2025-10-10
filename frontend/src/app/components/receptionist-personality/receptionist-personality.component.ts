@@ -1,4 +1,3 @@
-// src/app/components/receptionist-personality/receptionist-personality.component.ts
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -33,7 +32,7 @@ export class ReceptionistPersonalityComponent {
   /** Emittas vid Save/Apply */
   @Output() save = new EventEmitter<PersonalitySettings>();
 
-  /** Emittas live vid ändringar (om du vill autospara) */
+  /** Emittas live vid ändringar */
   @Output() changed = new EventEmitter<PersonalitySettings>();
 
   tones = [

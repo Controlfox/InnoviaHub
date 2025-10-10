@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using System.Net.Http.Headers;
 using DotNetEnv;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +34,7 @@ DotNetEnv.Env.Load();
 builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient("openai", client => {
-   client.BaseAddress = new Uri("https://api.openai.com/v1/responses");
+   client.BaseAddress = new Uri("https://api.openai.com/v1/responses/");
    var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
@@ -85,6 +87,26 @@ if (app.Environment.IsDevelopment())
 {
    app.MapOpenApi();
 }
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        var detail = app.Environment.IsDevelopment()
+            ? feature?.Error.ToString()
+            : "An unexpected error occurred.";
+        var problem = new ProblemDetails
+        {
+            Status = 500,
+            Title = "Server error",
+            Detail = detail
+        };
+        await context.Response.WriteAsJsonAsync(problem);
+    });
+});
 
 // Joel's ändringar för rätt userinfo - Authentication och Authorization middleware för Azure AD
 app.UseHttpsRedirection();

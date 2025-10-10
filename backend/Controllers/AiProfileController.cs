@@ -25,7 +25,7 @@ public class AiProfileController : ControllerBase
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error in AiProfileController.Get: {ex}");
+        Console.WriteLine($" Error in AiProfileController.Get: {ex}");
         return StatusCode(500, "Internal server error in Get profile");
     }
 
