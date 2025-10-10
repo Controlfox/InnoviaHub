@@ -58,7 +58,7 @@ builder.Services.AddHttpClient("openai", client => {
 
 
 // För att använda inMemory-databas, sätt useInMemory till true
-var useInMemory = true;
+var useInMemory = false;
 
 if (useInMemory)
 {

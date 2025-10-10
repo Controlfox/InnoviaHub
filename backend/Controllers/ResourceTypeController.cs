@@ -17,5 +17,7 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResourceType>>> GetAll(CancellationToken ct)
             => Ok(await _dbContext.ResourceTypes.AsNoTracking().ToListAsync(ct));
+
+            
     }
 }
