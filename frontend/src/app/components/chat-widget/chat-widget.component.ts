@@ -26,11 +26,12 @@ export class ChatWidgetComponent {
     const q = this.input().trim();
     if (!q || this.sending()) return;
 
-    const userId = this.auth.getUserId();
+    const userId = this.auth.getUserId?.();
     this.error.set(null);
     this.sending.set(true);
     try {
-      await this.chat.ask(q, userId);
+      // STREAMAD!
+      await this.chat.askStream(q, userId);
       this.input.set('');
     } catch (e: any) {
       this.error.set(e?.message ?? 'Ett fel uppstod.');

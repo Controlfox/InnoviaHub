@@ -13,9 +13,9 @@ public class AiProfileController : ControllerBase
     public record AiProfileDto(Guid UserId, string? AssistantName, string Tone, string Style, int Emoji);
 
     [HttpGet("{userId:guid}")]
-    public async Task<ActionResult<AiProfileDto>> Get(Guid userId, CancellationToken ct)
-    {
-            try
+public async Task<ActionResult<AiProfileDto>> Get(Guid userId, CancellationToken ct)
+{
+    try
     {
         var p = await _db.UserAiProfiles.FindAsync([userId], ct);
         if (p is null)
@@ -25,11 +25,14 @@ public class AiProfileController : ControllerBase
     }
     catch (Exception ex)
     {
-        Console.WriteLine($" Error in AiProfileController.Get: {ex}");
-        return StatusCode(500, "Internal server error in Get profile");
-    }
+        // Logga felet
+        Console.WriteLine($"Error in AiProfileController.Get: {ex}");
 
+        // Skicka en säker defaultprofil istället för 500, så UI aldrig bryts
+        return Ok(new AiProfileDto(userId, null, "neutral", "concise", 0));
     }
+}
+
 
     [HttpPut("{userId:guid}")]
     public async Task<ActionResult<AiProfileDto>> Upsert(Guid userId, [FromBody] AiProfileDto dto, CancellationToken ct)
