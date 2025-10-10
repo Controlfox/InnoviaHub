@@ -9,6 +9,7 @@ import { AzureDebugComponent } from './components/azure-debug/azure-debug.compon
 import { AdminPageComponent } from './pages/admin-page/admin-page.component';
 import { AuthGuard } from './core/authGuard';
 import { RoleGuard } from './core/roleGuard';
+import { ChatPageComponent } from './pages/chat-page/chat-page.component';
 
 export const routes: Routes = [
   {
@@ -33,6 +34,7 @@ export const routes: Routes = [
     component: SensorPageComponent,
     canActivate: [AuthGuard],
   },
+  { path: 'chat', component: ChatPageComponent, canActivate: [AuthGuard] },
   {
     path: 'azure-debug',
     component: AzureDebugComponent,

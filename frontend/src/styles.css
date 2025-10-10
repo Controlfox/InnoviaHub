@@ -149,6 +149,9 @@ img {
   .page-container__inner {
     padding: var(--page-margin-tablet);
   }
+  .menu-bar #chat {
+    display: none;
+  }
 }
 
 @media (min-width: 1024px) {

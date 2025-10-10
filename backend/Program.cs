@@ -34,7 +34,7 @@ DotNetEnv.Env.Load();
 builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient("openai", client => {
-   client.BaseAddress = new Uri("https://api.openai.com/v1/responses");
+   client.BaseAddress = new Uri("https://api.openai.com/v1/responses/");
    var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
@@ -43,7 +43,7 @@ builder.Services.AddHttpClient("openai", client => {
 
 
 // För att använda inMemory-databas, sätt useInMemory till true
-var useInMemory = true;
+var useInMemory = false;
 
 if (useInMemory)
 {

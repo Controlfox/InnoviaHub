@@ -13,7 +13,6 @@ export interface ChatMessage {
 const STORAGE_KEY = 'aiReceptionistSessionChat';
 const MAX_CONTEXT_PAIRS = 8;
 
-// Plocka API-bas från runtime-env (din assets/env.js)
 const API = (window as any).__env?.NG_APP_API_URL ?? 'http://localhost:5184';
 
 @Injectable({ providedIn: 'root' })
@@ -53,9 +52,7 @@ export class AiChatService {
     this.save([...this.messages, msg]);
   }
 
-  /** Gör en kort kontext av senaste user/assistant-paren */
   private buildContext(): string {
-    // gruppera ihop “user -> assistant” par
     const pairs: { user?: string; assistant?: string }[] = [];
     let current: { user?: string; assistant?: string } | null = null;
 
