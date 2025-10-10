@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from './auth.service';
 
 export type ChatRole = 'user' | 'assistant';
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
@@ -12,16 +12,12 @@ export interface ChatMessage {
 
 const STORAGE_KEY = 'aiReceptionistSessionChat';
 const MAX_CONTEXT_PAIRS = 8;
-
-// OBS: Bas-URL för ditt API
 const API = (window as any).__env?.NG_APP_API_URL ?? 'http://localhost:5184';
 
 @Injectable({ providedIn: 'root' })
 export class AiChatService {
-  private _messages$ = new BehaviorSubject<ChatMessage[]>(this.load());
-  messages$ = this._messages$.asObservable();
-
-  constructor(private auth?: AuthService) {}
+  private readonly _messages$ = new BehaviorSubject<ChatMessage[]>(this.load());
+  readonly messages$ = this._messages$.asObservable();
 
   get messages(): ChatMessage[] {
     return this._messages$.value;
@@ -89,7 +85,6 @@ export class AiChatService {
     return lines.join('\n');
   }
 
-  /** Icke-streamad (finns kvar för bakåtkomp) */
   async ask(question: string, userId?: string): Promise<string> {
     this.add('user', question);
 
@@ -98,7 +93,7 @@ export class AiChatService {
       ? `Tidigare konversation (komprimerad):\n${context}\n\nNy fråga:\n${question}`
       : question;
 
-    const url = API ? `${API}/api/chat` : `/api/chat`;
+    const url = `${API}/api/chat`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -118,12 +113,9 @@ export class AiChatService {
     return answer;
   }
 
-  /** STREAMAD – rekommenderad */
   askStream(question: string, userId?: string): Promise<string> {
-    // Lägg till användarens fråga direkt
     this.add('user', question);
 
-    // Skapa ett tomt assistant-meddelande som vi uppdaterar token-för-token
     const assistantId = crypto.randomUUID();
     this.save([
       ...this.messages,
@@ -135,9 +127,8 @@ export class AiChatService {
       ? `Tidigare konversation (komprimerad):\n${context}\n\nNy fråga:\n${question}`
       : question;
 
-    const base = API ? `${API}` : '';
     const url =
-      `${base}/api/chat/stream?` +
+      `${API}/api/chat/stream?` +
       `q=${encodeURIComponent(combined)}` +
       (userId ? `&userId=${encodeURIComponent(userId)}` : '');
 
@@ -145,40 +136,46 @@ export class AiChatService {
       const es = new EventSource(url);
       let buffer = '';
 
-      es.onmessage = (evt) => {
-        // Varje meddelande är en JSON-sträng från OpenAI:s SSE
+      es.addEventListener('response.output_text.delta', (evt: MessageEvent) => {
         try {
           const data = JSON.parse(evt.data);
-
-          // Försök plocka text-increment – stöd för flera möjliga fält
-          // 1) Sammanlagd text (ibland tillhandahålls)
-          if (typeof data?.output_text === 'string') {
-            buffer = data.output_text;
-          }
-          // 2) Delta-event (vanligast)
           if (typeof data?.delta === 'string') {
             buffer += data.delta;
+            this.replaceMessage(assistantId, buffer);
           }
-          // 3) Andra varianter – vissa events har {type, delta}, eller {type:"response.output_text.delta", delta:"..."}
-          if (
-            typeof data?.type === 'string' &&
-            typeof data?.delta === 'string'
-          ) {
-            buffer += data.delta;
+        } catch {}
+      });
+
+      es.addEventListener('response.output_text.done', (evt: MessageEvent) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (typeof data?.text === 'string') {
+            buffer = data.text;
+            this.replaceMessage(assistantId, buffer);
           }
+        } catch {}
+      });
 
-          this.replaceMessage(assistantId, buffer);
-        } catch {
-          // Om det inte är JSON (ovanligt), ignorera
-        }
-      };
-
-      es.addEventListener('done', () => {
+      es.addEventListener('response.completed', () => {
         es.close();
         resolve(buffer);
       });
 
-      es.onerror = (err) => {
+      es.onmessage = (evt) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (typeof data?.delta === 'string') {
+            buffer += data.delta;
+            this.replaceMessage(assistantId, buffer);
+          }
+          if (data?.type === 'response.completed') {
+            es.close();
+            resolve(buffer);
+          }
+        } catch {}
+      };
+
+      es.onerror = () => {
         es.close();
         const msg = 'Strömmen avbröts eller ett fel uppstod.';
         this.replaceMessage(assistantId, buffer || msg);
