@@ -1,5 +1,124 @@
+<!-- sensor-page.component.html (Tailwind) -->
+
 <div class="page-container">
   <div class="page-container__inner">
-    <p>sensor-page works!</p>
+    <!-- Header -->
+    <header class="flex items-center gap-3 mb-4 sm:mb-6">
+      <h1 class="text-2xl font-bold text-[var(--color-heading)] flex-1">
+        Sensorer
+      </h1>
+    </header>
+
+    <!-- Kategorier som nav-tabs -->
+    <!--
+    <app-nav-tabs
+      [tabs]="categoryTabs"
+      [activeId]="activeCategoryId()"
+      (changeTab)="onCategoryChange($event)"
+      class="mb-5"
+    >
+    </app-nav-tabs>
+   -->
+
+    <!-- Laddning -->
+    <div
+      *ngIf="loading"
+      class="grid gap-4 sm:gap-5 grid-cols-[repeat(auto-fill,minmax(160px,1fr))]"
+    >
+      <div
+        *ngFor="let i of [].constructor(10); let k = index"
+        class="rounded-2xl border border-[var(--color-border)] p-3 shadow-sm animate-pulse"
+      >
+        <div class="h-24 rounded-xl bg-gray-200/80 mb-3"></div>
+        <div class="h-4 w-3/4 rounded bg-gray-200/80 mb-2"></div>
+        <div class="h-3 w-1/2 rounded bg-gray-200/70"></div>
+      </div>
+    </div>
+
+    <!-- Fel -->
+    <div
+      *ngIf="!loading && error"
+      class="mt-3 rounded-xl border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 text-[var(--color-heading)] px-4 py-3"
+    >
+      {{ error }}
+    </div>
+
+    <!-- Kortgrid -->
+    <div
+      *ngIf="!loading && !error"
+      class="grid gap-4 sm:gap-5 grid-cols-[repeat(auto-fill,minmax(160px,1fr))]"
+    >
+      <div
+        *ngFor="let d of paged()"
+        (click)="onClickCard(d)"
+        class="rounded-2xl border border-[var(--color-border)] bg-white p-3 shadow-sm hover:shadow-md hover:border-[var(--color-primary)]/40 transition cursor-pointer"
+        [class.opacity-60]="!isActive(d)"
+        [class.pointer-events-none]="!isActive(d)"
+      >
+        <div class="mb-3">
+          <ng-container *ngIf="latest[(d.id || '').toLowerCase()]; else noData">
+            <div class="grid grid-cols-2 gap-2">
+              <div
+                *ngFor="let kv of latest[(d.id || '').toLowerCase()] | keyvalue"
+                class="rounded-lg bg-[var(--color-bg-alt)] px-2 py-1 min-w-0"
+              >
+                <div
+                  class="text-[10px] uppercase tracking-wide text-[var(--color-text)]/60"
+                >
+                  {{ kv.key }}
+                </div>
+
+                <div class="text-sm font-semibold text-[var(--color-heading)]">
+                  {{ kv.value?.value | number : "1.1-1" }}
+                </div>
+
+                <!-- Varning endast för 'temperature', med säker radbrytning -->
+                <div
+                  *ngIf="
+                    (kv.key || '').toLowerCase() === 'temperature' &&
+                    alertsByDevice[d.id?.toLowerCase() || '']
+                  "
+                  class="mt-2 flex items-center gap-1 rounded-full border border-[var(--color-error)]/40 bg-[var(--color-error)]/10 text-[var(--color-error)] text-xs font-semibold max-w-full whitespace-normal"
+                >
+                  <span
+                    class="material-symbols-rounded text-[16px] leading-none shrink-0"
+                  >
+                    warning
+                  </span>
+                  <span class="leading-snug">
+                    {{ alertsByDevice[d.id!.toLowerCase()] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #noData>
+            <div
+              class="h-24 rounded-xl bg-[var(--color-bg-alt)] grid place-items-center text-sm text-[var(--color-text)]/60"
+            >
+              – ingen mätning ännu –
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Text -->
+        <div class="space-y-1">
+          <div class="font-bold text-[var(--color-heading)] truncate">
+            {{ d.serial || "Sensor" }}
+          </div>
+          <div class="text-xs text-[var(--color-text)]/70">
+            {{ updatedLabel(d) }}
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="paged().length === 0"
+        class="col-span-full text-[var(--color-text)]/70 text-sm px-2 py-3"
+      >
+        Inga sensorer i denna kategori.
+      </div>
+    </div>
   </div>
 </div>
