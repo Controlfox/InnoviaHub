@@ -18,28 +18,32 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      connect-src 'self' 
-        https://login.microsoftonline.com 
-        https://graph.microsoft.com 
-        https://*.microsoftonline.com
-        http://localhost:5184 
-        https://localhost:7205
-        http://localhost:4200
-        https://innoviahub.hellbergsystems.se
-        https://innoviahub.hellbergsystems.se:8003
-        https://innoviahub-app-6hrgl.ondigitalocean.app
-        wss://innoviahub.hellbergsystems.se
-        wss://innoviahub.hellbergsystems.se:8003
-        ws://localhost:*
-        wss://localhost:*;
-      img-src 'self' data: https:;
-      font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com;
-      frame-src https://login.microsoftonline.com https://*.microsoftonline.com;
-      object-src 'none';
-    "
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  connect-src 'self'
+    https://login.microsoftonline.com
+    https://graph.microsoft.com
+    https://*.microsoftonline.com
+    http://localhost:5184
+    https://localhost:7205
+    http://localhost:4200
+    http://localhost:5101
+    http://localhost:5102
+    http://localhost:5103
+    http://localhost:5104
+    http://localhost:5105
+    https://innoviahub.hellbergsystems.se
+    https://innoviahub.hellbergsystems.se:8003
+    ws://localhost:*
+    wss://localhost:*
+    wss://innoviahub.hellbergsystems.se
+    wss://innoviahub.hellbergsystems.se:8003;
+  img-src 'self' data: https:;
+  font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com;
+  frame-src https://login.microsoftonline.com https://*.microsoftonline.com;
+  object-src 'none';
+"
     />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
