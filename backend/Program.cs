@@ -77,7 +77,7 @@ else
 // Joel's ändringar för rätt userinfo - CORS för att tillåta frontend att anropa API
 builder.Services.AddCors(opt => {
    opt.AddPolicy("ng", p => p
-      .WithOrigins("http://localhost:4200", "https://innoviahub-app-6hrgl.ondigitalocean.app")
+      .WithOrigins("http://localhost:4200", "https://innoviahub-app-v4x7o.ondigitalocean.app")
       .AllowAnyHeader()
       .AllowAnyMethod()
       .AllowCredentials()
