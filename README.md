@@ -1,15 +1,19 @@
 # InnoviaHub
 
-Ett enkelt bokningssystem för resurser och faciliteter.
+InnoviaHub är en webbapplikation för bokning och hantering av resurser inom företag.
+Appen är byggd med fokus på enkelhet, säkerthet och realtidsuppdateringar. Det är även
+integrerat med Entra ID för säker autentisering.
 
 ## Vad är InnoviaHub?
 
 InnoviaHub är en webbapplikation där användare kan:
 
 - Logga in säkert med Microsoft-konto
-- Boka rum och resurser
+- Boka rum, utrustning och andra resurser
+- Se och hantera sina egna bokningar
 - Se tillgängliga tider
-- Hantera sina bokningar
+- Få information om resurser i realtid
+- Chatta med AI-Receptionisten
 
 ## Teknik
 
@@ -18,18 +22,23 @@ InnoviaHub är en webbapplikation där användare kan:
 - Angular 19
 - TypeScript
 - Azure Entra ID för inloggning
+- Tailwind CSS
+- DigitalOcean
 
 **Backend (Server):**
 
 - .NET 9.0
 - ASP.NET Core API
 - Entity Framework
+- Azure
 
 ## Kom igång
 
 ### Snabbstart
 
-Om du inte vill installera applikationen själv finns produktionsmiljön tillgänglig på https://innoviahub-app-6hrgl.ondigitalocean.app/.
+Om du inte vill installera applikationen själv finns produktionsmiljön tillgänglig på https://innoviahub-app-v4x7o.ondigitalocean.app/.
+
+Om backend inte är tillgängligt visas meddelanden. Det går fortfarande att navigera och testa gränssnittet.
 
 ### Entra ID
 
@@ -46,7 +55,7 @@ För att logga in, oavsett om det är lokalt eller i produktionsmiljön, behöve
 1. **Klona projektet:**
 
    ```bash
-   git clone https://github.com/villetf/InnoviaHub.git
+   git clone https://github.com/Controlfox/InnoviaHub.git
    cd InnoviaHub
    ```
 
@@ -73,9 +82,11 @@ För att logga in, oavsett om det är lokalt eller i produktionsmiljön, behöve
 
 1. **Öppna webbläsaren** och gå till <http://localhost:4200>
 2. **Klicka "Login with Microsoft"** för att logga in
-3. **Välj datum** med datumväljaren
-4. **Boka resurser** (kommer snart)
-5. **Logga ut** när du är klar
+3. **Bokning** Visa och boka lediga resurser
+4. **Profil** Visa och hantera dina bokningar. Välj personlighet för receptionist.
+5. **Receptionisten** Chatta med InnoviaHubs egna AI-receptionist
+6. **Admin** Hantera resurser och bokningar
+7. **Sensorer** Se live-data från sensorerna i byggnaden.
 
 ## Utveckling
 
@@ -111,6 +122,14 @@ Om något inte fungerar:
 4. Pusha: `git push origin min-nya-feature`
 5. Skapa en Pull Request
 
+## Funktioner jag själv vidareutvecklat efter uppdelning
+
+- Skapat sensor och resursvyer
+- Implementerat realtidsuppdatering via SignalR för mätvärden och varningar på sensorer
+- Lagt till felhantering så att systemet visar tydliga meddelanden om servern inte nås
+- Implementerat openai för AI-receptionisten och skapat UI för personlighets-val och chatt
+
 ---
 
 **Skapad av InnoviaHub-teamet** 🚀
+Utvecklad och vidareutvecklad av Tintin Larsson(Controlfox)
